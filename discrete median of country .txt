@@ -1,0 +1,16 @@
+UPDATE Table 
+SET 
+WITH CTE AS
+(   SELECT  country,
+            daily_vaccinations, 
+            [half1] = NTILE(2) OVER(PARTITION BY Code ORDER BY Value), 
+            [half2] = NTILE(2) OVER(PARTITION BY Code ORDER BY Value DESC)
+    FROM    T
+    WHERE   Value IS NOT NULL
+)
+SELECT  Code,
+        (MAX(CASE WHEN Half1 = 1 THEN Value END) + 
+        MIN(CASE WHEN Half2 = 1 THEN Value END)) / 2.0
+FROM    CTE
+GROUP BY daily_vaccinations;
+WHERE daily_vaccinations IS NULL
